@@ -16,6 +16,21 @@ validationSet = ImageServer.Load(datasetDir + "dataset_nimgs=9_perturbations=[]_
 # 两个stage训练，不宜使用estimator
 # regressor = tf.estimator.Estimator(model_fn=DAN,
 # 	                                params={})
+def evaluateError(landmarkGt, landmarkP):
+    e = np.zeros(68)
+    ocular_dist = np.mean(np.linalg.norm(landmarkGt[36:42] - landmarkGt[42:48], axis=1))
+    for i in range(68):
+        e[i] = np.linalg.norm(landmarkGt[i] - landmarkP[i])
+    e = e / ocular_dist
+    return e
+
+def evaluateBatchError(landmarkGt, landmarkP, batch_size):
+    e = np.zeros([batch_size, 68])
+    for i in range(batch_size):
+        e[i] = evaluateError(landmarkGt[i], landmarkP[i])
+    mean_err = e[:,:].mean()#axis=0)
+    return mean_err
+
 
 def getLabelsForDataset(imageServer):
     nSamples = imageServer.gtLandmarks.shape[0]
@@ -58,7 +73,7 @@ with tf.Session() as sess:
        
     # Landmark68Test(MeanShape,ImageMean,ImageStd,sess)
     print("Starting training......")
-    for epoch in range(1000):
+    for epoch in range(2):
         Count = 0
         while Count * 2 < Xtrain.shape[0]:
             RandomIdx = np.random.choice(Xtrain.shape[0],2,False)
@@ -76,8 +91,9 @@ with tf.Session() as sess:
                 BatchErr = 0
 
                 if STAGE == 1 or STAGE == 0:
-                    TestErr = sess.run(dan['S1_Cost'],{dan['InputImage']:Xvalid,dan['GroundTruth']:Yvalid,\
+                    TestErr = sess.run(dan['S1_Cost'], {dan['InputImage']:Xvalid,dan['GroundTruth']:Yvalid,\
                         dan['S1_isTrain']:False,dan['S2_isTrain']:False})
+                    # print(evaluateBatchError(Yvalid.reshape([-1, 68, 2]), S1_Ret.reshape([-1, 68, 2]), 9))
                     BatchErr = sess.run(dan['S1_Cost'],{dan['InputImage']:Xtrain[RandomIdx],\
                         dan['GroundTruth']:Ytrain[RandomIdx],dan['S1_isTrain']:False,dan['S2_isTrain']:False})
                 else:
@@ -100,5 +116,5 @@ with tf.Session() as sess:
                         dan['GroundTruth']:Ytrain[RandomIdx],dan['S1_isTrain']:False,dan['S2_isTrain']:False})
                 print('Epoch: ', epoch, ' Batch: ', Count, 'TestErr:', TestErr, ' BatchErr:', BatchErr)
             Count += 1
-        Saver.save(sess,'./Model/Model')
+        # Saver.save(sess,'./Model/Model')
 

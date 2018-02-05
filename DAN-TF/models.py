@@ -20,11 +20,23 @@ N_LANDMARK = 68
 def PredictErr(GroudTruth, Prediction):
     Gt = tf.reshape(GroudTruth, [-1, N_LANDMARK, 2])
     Pt = tf.reshape(Prediction, [-1, N_LANDMARK, 2])
-    loss = tf.reduce_sum(tf.squared_difference(Gt, Pt), [1, 2])
-    norm = tf.norm((Gt[:, 36, :] - Gt[:, 45, :]), 1)
-    cost = tf.reduce_mean(tf.sqrt(loss) / norm)
+    loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.squared_difference(Gt, Pt), 2)), 1)
+    # norm = tf.sqrt(tf.reduce_sum(((tf.reduce_mean(Gt[:, 36:42, :],1) - \
+    #     tf.reduce_mean(Gt[:, 42:48, :],1))**2), 1))
+    norm = tf.norm(tf.reduce_mean(Gt[:, 36:42, :],1) - tf.reduce_mean(Gt[:, 42:48, :],1), axis=1)
+    # cost = tf.reduce_mean(loss / norm)
 
-    return cost
+    return loss/norm
+
+# def PredictErr(GroudTruth, Prediction):
+#     # TODO: assert shapes
+#     #       remove 5
+#     Gt = tf.reshape(GroudTruth, [-1, N_LANDMARK, 2])
+#     Pt = tf.reshape(Prediction, [-1, N_LANDMARK, 2])
+#     norm = tf.sqrt(tf.reduce_sum(((tf.reduce_mean(Gt[:, 36:42, :],1) - \
+#         tf.reduce_mean(Gt[:, 42:48, :],1))**2), 1))
+
+#     return tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.square(Pt - Gt), 2)), 1) / norm
 
 
 def DAN(MeanShapeNumpy):
