@@ -17,7 +17,7 @@ from layers import AffineTransformLayer, TransformParamsLayer, LandmarkImageLaye
 IMGSIZE = 112
 N_LANDMARK = 68
 
-def PredictErr(GroudTruth, Prediction):
+def NormRmse(GroudTruth, Prediction):
     Gt = tf.reshape(GroudTruth, [-1, N_LANDMARK, 2])
     Pt = tf.reshape(Prediction, [-1, N_LANDMARK, 2])
     loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.squared_difference(Gt, Pt), 2)), 1)
@@ -28,15 +28,6 @@ def PredictErr(GroudTruth, Prediction):
 
     return loss/norm
 
-# def PredictErr(GroudTruth, Prediction):
-#     # TODO: assert shapes
-#     #       remove 5
-#     Gt = tf.reshape(GroudTruth, [-1, N_LANDMARK, 2])
-#     Pt = tf.reshape(Prediction, [-1, N_LANDMARK, 2])
-#     norm = tf.sqrt(tf.reduce_sum(((tf.reduce_mean(Gt[:, 36:42, :],1) - \
-#         tf.reduce_mean(Gt[:, 42:48, :],1))**2), 1))
-
-#     return tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.square(Pt - Gt), 2)), 1) / norm
 
 
 def DAN(MeanShapeNumpy):
@@ -86,7 +77,7 @@ def DAN(MeanShapeNumpy):
         S1_Fc2 = tf.layers.dense(S1_Fc1,N_LANDMARK * 2)
 
         S1_Ret = S1_Fc2 + MeanShape
-        S1_Cost = tf.reduce_mean(PredictErr(GroundTruth, S1_Ret))
+        S1_Cost = tf.reduce_mean(NormRmse(GroundTruth, S1_Ret))
 
         with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS,'Stage1')):
             S1_Optimizer = tf.train.AdamOptimizer(0.001).minimize(S1_Cost,\
@@ -141,7 +132,7 @@ def DAN(MeanShapeNumpy):
         S2_Fc2 = tf.layers.dense(S2_Fc1,N_LANDMARK * 2)
 
         S2_Ret = LandmarkTransformLayer(S2_Fc2 + S2_InputLandmark,S2_AffineParam, Inverse=True)
-        S2_Cost = tf.reduce_mean(PredictErr(GroundTruth,S2_Ret))
+        S2_Cost = tf.reduce_mean(NormRmse(GroundTruth,S2_Ret))
 
         with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS,'Stage2')):
             S2_Optimizer = tf.train.AdamOptimizer(0.001).minimize(S2_Cost,\

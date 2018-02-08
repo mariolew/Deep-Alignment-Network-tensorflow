@@ -14,6 +14,11 @@ Pixels = tf.constant(np.array([(x, y) for x in range(IMGSIZE) for y in range(IMG
 
 
 def TransformParamsLayer(SrcShapes, DstShape):
+    '''
+    SrcShapes: [N, (N_LANDMARK x 2)]
+    DstShape: [N_LANDMARK x 2,]
+    return: [N, 6]
+    '''
     # import pdb; pdb.set_trace()
     def bestFit(src, dst):
         # import pdb; pdb.set_trace()
@@ -51,6 +56,11 @@ def TransformParamsLayer(SrcShapes, DstShape):
 
 
 def AffineTransformLayer(Image, Param):
+    '''
+    Image: [N, IMGSIZE, IMGSIZE, 2]
+    Param: [N, 6]
+    return: [N, IMGSIZE, IMGSIZE, 2]
+    '''
 
     A = tf.reshape(Param[:, 0:4], (-1, 2, 2))
     T = tf.reshape(Param[:, 4:6], (-1, 1, 2))
@@ -86,6 +96,11 @@ def AffineTransformLayer(Image, Param):
 
 
 def LandmarkTransformLayer(Landmark, Param, Inverse=False):
+    '''
+    Landmark: [N, N_LANDMARK x 2]
+    Param: [N, 6]
+    return: [N, N_LANDMARK x 2]
+    '''
 
     A = tf.reshape(Param[:, 0:4], [-1, 2, 2])
     T = tf.reshape(Param[:, 4:6], [-1, 1, 2])
