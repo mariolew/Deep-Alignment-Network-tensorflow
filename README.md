@@ -17,17 +17,25 @@ Dataset formatted like 300-W and Menpo
 
 `cd DAN_TF`
 
+`mkdir Model`
+
+
 `python training\testSetPreparation.py`
 
 ### Training or testing
 
 `python train\testDAN.py`
 
-Remember to set the `STAGE` variable in trainDAN.py
+Remember to set the `STAGE` variable and modify the `data path` in trainDAN.py
 
 ### MobileNet training or testing
 
+`mkdir Model_mobilenet`
+
+
 `python trainDAN_mobilenet.py`
+
+Remember to set the `STAGE` variable and modify the `data path` in trainDAN_mobilenet.py
 
 
 ## What's new?
