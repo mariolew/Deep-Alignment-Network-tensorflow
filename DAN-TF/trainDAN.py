@@ -60,7 +60,7 @@ initLandmarks = trainSet.initLandmarks[0].reshape((1, 136))
 
 dan = DAN(initLandmarks)
 
-STAGE = 1
+STAGE = 2
 
 with tf.Session() as sess:
     Saver = tf.train.Saver()
@@ -116,5 +116,5 @@ with tf.Session() as sess:
                         dan['GroundTruth']:Ytrain[RandomIdx],dan['S1_isTrain']:False,dan['S2_isTrain']:False})
                 print('Epoch: ', epoch, ' Batch: ', Count, 'TestErr:', TestErr, ' BatchErr:', BatchErr)
             Count += 1
-        # Saver.save(sess,'./Model/Model')
+        Saver.save(sess,'./Model/Model')
 
